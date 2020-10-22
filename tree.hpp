@@ -16,14 +16,15 @@ struct Tree{
 					dfsdeep(y, x, dis+1);
 		}
 		void dfs(int x, int fa){
-			seq[pos[x] = ++mt] = make_pair(d[x], x);
+			seq[pos[x] = mt++] = make_pair(d[x], x);
 			for(auto y:edge[x])
 				if(y != fa){
 					dfs(y, x);
-					seq[++mt] = make_pair(d[x], x);
+					seq[mt++] = make_pair(d[x], x);
 				}
 		}
 		void init(){
+			flag=true;
 			d.resize(n);
 			dfsdeep(rt, -1, 1);
 			mt = 0;
@@ -34,10 +35,24 @@ struct Tree{
 		}
 	public:
 		Tree()=default;
+		~Tree(){
+			for(vector<int> x:edge){
+				x.clear();
+				vector<int>(x).swap(x);
+			}
+			edge.clear();
+			vector<vector<int> >(edge).swap(edge);
+			seq.clear();
+			vector<pair<int,int> >(seq).swap(seq);
+			d.clear();
+			vector<int>(d).swap(d);
+			pos.clear();
+			vector<int>(pos).swap(pos);
+		}
 		Tree(int _n):n(_n),rt(0),flag(false){
 			edge.resize(n);
 		}
-		void ins(int x, int y){
+		void add_edge(int x, int y){
 			edge[x].push_back(y);
 			edge[y].push_back(x);
 		}
@@ -50,4 +65,4 @@ struct Tree{
 			int z = lca(x, y);
 			return d[x] + d[y] - 2 * d[z];
 		}
-}
+};

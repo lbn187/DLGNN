@@ -3,14 +3,16 @@
 #include "shortest_path.hpp"
 #include "katz_distance.hpp"
 #include "anchor_distance.hpp"
-void main(int argc, char *argv[]){
-	if(argv[2] == "random_tree"){
-		random_tree(argv[0], argv[1], argc <= 3 ? 1000: atoi(argv[2]));
-	}else if(argv[1] == "shortest_path"){
-		shortest_path(argv[0], argv[1]);
-	}else if(argv[1] == "katz_distance"){
-		katz_distance(argv[0], argv[1], argv <= 3 ? 0.03 : atof(argv[2]), argv <= 4 ? 10 : atoi(argv[3]));
-	}else if(argv[1] == "anchor_distance"){
-		anchor_distance(argv[0], argv[1], argv <= 3 ? 10000 : atoi(argv[2]));
+int main(int argc, char *argv[]){
+	srand(time(0));
+	if(string(argv[1]) == "random_tree"){
+		random_tree(argv[2], argv[3], argc < 5 ? 1000: atoi(argv[4]));
+	}else if(string(argv[1]) == "shortest_path"){
+		shortest_path(argv[2], argv[3]);
+	}else if(string(argv[1]) == "katz_distance"){
+		katz_distance(argv[2], argv[3], argc < 5 ? 0.03 : atof(argv[4]), argc < 6 ? 10 : atoi(argv[5]));
+	}else if(string(argv[1]) == "anchor_distance"){
+		anchor_distance(argv[2], argv[3], argc < 5 ? 10000 : atoi(argv[4]));
 	}
+	return 0;
 }

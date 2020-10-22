@@ -1,10 +1,29 @@
+import torch
+import os
+from torch_geometric.utils import negative_sampling
+from ogb.linkproppred import PygLinkPropPredDataset
+import argparse
+import torch_geometric.transforms as T
+def gpu_setup(use_gpu, gpu_id):
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+    if torch.cuda.is_available() and use_gpu:
+        print('cuda available with GPU:', torch.cuda.get_device_name(0))
+        device = torch.device("cuda")
+    else:
+        print('cuda not available')
+        device = torch.device("cpu")
+    return device
 def main():
     parser = argparse.ArgumentParser(description='Process-Data')
-    parser.add_argument('--name', type=string, default='ogbl-ddi')
-    parser.add_argument('--dir', type=string, default='all.txt')
+    parser.add_argument('--name', type=str, default='ogbl-ddi')
+    parser.add_argument('--dir', type=str, default='all.txt')
+    parser.add_argument('--gpu', type=int, default=0)
+    args = parser.parse_args()
     if args.name.startswith('ogbl'):
         dataset = PygLinkPropPredDataset(name=args.name, transform=T.ToSparseTensor())
-        data = dataset[0]
+        device = gpu_setup(True, args.gpu)
+        data = dataset[0].to(device)
         split_edge = dataset.get_edge_split()
         train_pos_edge = split_edge['train']['edge']
         if args.name == 'ogbl-citation':

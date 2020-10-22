@@ -1,10 +1,12 @@
 #include<bits/stdc++.h>
+using namespace std;
 struct DSU{
 	private:
 		int n;
 		vector<int> father;
 	public:
 		DSU()=default;
+		~DSU(){father.clear();vector<int>(father).swap(father);}
 		DSU(int _n):n(_n){init(n);}
 		void init(int _n){
 			n = _n;
@@ -16,7 +18,7 @@ struct DSU{
 			return father[x] == x ? x : father[x] = find(father[x]);
 		}
 		int& operator[](int x){
-			return F[find(x)];
+			return father[find(x)];
 		}
 		bool merge(int x, int y){
 			x = find(x);
@@ -25,4 +27,4 @@ struct DSU{
 			father[x] = y;
 			return true;
 		}
-}
+};

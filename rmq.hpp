@@ -6,8 +6,16 @@ template<typename T> struct RMQ{
 		vector<vector<T> >f;
 	public:
 		RMQ()=default;
+		~RMQ(){
+			for(vector<T> x:f){
+				x.clear();
+				vector<T>(x).swap(x);
+			}
+			f.clear();
+			vector<vector<T> >(f).swap(f);
+		}
 		void init(vector<T> v){
-			n=v.size();
+			n=(int)v.size();
 			f.resize(n);
 			high = 32 - __builtin_clz(n);
 			for(int i = 0; i < n; i++)
@@ -20,4 +28,4 @@ template<typename T> struct RMQ{
 			int t = 31 - __builtin_clz(r - l + 1);
 			return min(f[l][t], f[r - (1 << t) + 1][t]);
 		}
-}
+};
