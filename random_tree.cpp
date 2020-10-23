@@ -61,27 +61,27 @@ void random_tree(char *in_dir, char *out_dir, int num){
 		for(int i = 0; i < test_neg_m; i++)
 			test_neg[i].z += tree.dis(test_neg[i].x, test_neg[i].y);
 	}
-	freopen((string(out_dir) + string("train_pos_avg.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("random_tree_train_pos.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < train_pos_m; i++)
 		printf("%.15lf\n", train_pos[i].z / num);
 	fclose(stdout);
-	freopen((string(out_dir) + string("train_neg_avg.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("random_tree_train_neg.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < train_neg_m; i++)
 		printf("%.15lf\n", train_neg[i].z / num);
 	fclose(stdout);
-	freopen((string(out_dir) + string("valid_pos_avg.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("random_tree_valid_pos.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < valid_pos_m; i++)
 		printf("%.15lf\n", valid_pos[i].z / num);
 	fclose(stdout);
-	freopen((string(out_dir) + string("valid_neg_avg.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("random_tree_valid_neg.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < valid_neg_m; i++)
 		printf("%.15lf\n", valid_neg[i].z / num);
 	fclose(stdout);
-	freopen((string(out_dir) + string("test_pos_avg.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("random_tree_test_pos.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < test_pos_m; i++)
 		printf("%.15lf\n", test_pos[i].z / num);
 	fclose(stdout);
-	freopen((string(out_dir) + string("test_neg_avg.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("random_tree_test_neg.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < test_neg_m; i++)
 		printf("%.15lf\n", test_neg[i].z / num);
 	fclose(stdout);
