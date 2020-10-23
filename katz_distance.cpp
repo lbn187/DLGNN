@@ -52,7 +52,7 @@ void katz_distance(char *in_dir, char *out_dir, double beta, int max_length){
 		dp[i][i] = 1.0;
 	}
 	double tmp = 1.0;
-	for(step = 1; step < max_length; step++){
+	for(int step = 0; step < max_length; step++){
 		tmp = tmp * beta;
 		for(int i = 0; i < num_nodes; i++)
 			for(int j = 0; j < num_nodes; j++)

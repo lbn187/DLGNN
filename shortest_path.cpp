@@ -34,9 +34,9 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 		vis[st] = i;
 		d[st] = 0;
 		while(!Q.empty()){
-			int x = Q.top();
+			int x = Q.front();
 			Q.pop();
-			for(int y : V[x])
+			for(int y : edge[x])
 				if(vis[y] != i){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;
@@ -59,9 +59,9 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 		vis[st] = i;
 		d[st] = 0;
 		while(!Q.empty()){
-			int x = Q.top();
+			int x = Q.front();
 			Q.pop();
-			for(int y : V[x])
+			for(int y : edge[x])
 				if(vis[y] != i){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;
@@ -84,9 +84,9 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 		vis[st] = i;
 		d[st] = 0;
 		while(!Q.empty()){
-			int x = Q.top();
+			int x = Q.front();
 			Q.pop();
-			for(int y : V[x])
+			for(int y : edge[x])
 				if(vis[y] != i){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;
@@ -109,9 +109,9 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 		vis[st] = i;
 		d[st] = 0;
 		while(!Q.empty()){
-			int x = Q.top();
+			int x = Q.front();
 			Q.pop();
-			for(int y : V[x])
+			for(int y : edge[x])
 				if(vis[y] != i){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;
@@ -134,9 +134,9 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 		vis[st] = i;
 		d[st] = 0;
 		while(!Q.empty()){
-			int x=Q.top();
+			int x=Q.front();
 			Q.pop();
-			for(int y : V[x])
+			for(int y : edge[x])
 				if(vis[y] != i){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;
@@ -159,9 +159,9 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 		vis[st] = i;
 		d[st] = 0;
 		while(!Q.empty()){
-			int x=Q.top();
+			int x=Q.front();
 			Q.pop();
-			for(int y : V[x])
+			for(int y : edge[x])
 				if(vis[y] != i){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;

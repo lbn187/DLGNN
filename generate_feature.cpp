@@ -8,11 +8,11 @@ int main(int argc, char *argv[]){
 	if(string(argv[1]) == "random_tree"){
 		random_tree(argv[2], argv[3], argc < 5 ? 1000: atoi(argv[4]));
 	}else if(string(argv[1]) == "shortest_path"){
-		shortest_path(argv[2], argv[3]);
+		shortest_path(argv[2], argv[3], argc < 5 ? 20 : atoi(argv[4]));
 	}else if(string(argv[1]) == "katz_distance"){
 		katz_distance(argv[2], argv[3], argc < 5 ? 0.03 : atof(argv[4]), argc < 6 ? 10 : atoi(argv[5]));
 	}else if(string(argv[1]) == "anchor_distance"){
-		anchor_distance(argv[2], argv[3], argc < 5 ? 10000 : atoi(argv[4]));
+		anchor_distance(argv[2], argv[3], argc < 5 ? 10000 : atoi(argv[4]), argc < 6 ? 15 : atoi(argv[5]));
 	}
 	return 0;
 }

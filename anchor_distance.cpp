@@ -59,9 +59,9 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv){
 		vis[st] = i;
 		d[st] = 0;
 		while(!Q.empty()){
-			int x = Q.top();
+			int x = Q.front();
 			Q.pop();
-			for(int y : V[x])
+			for(int y : edge[x])
 				if(vis[y] != i){
 					vis[y] = i;
 					d[y] = d[x] + 1;
