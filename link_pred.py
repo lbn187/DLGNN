@@ -68,7 +68,7 @@ class LinkPredictor(nn.Module):
             self.layers.append(torch.nn.Linear(hidden_dim, hidden_dim))
         self.layers.append(torch.nn.Linear(hidden_dim, out_dim))
         self.dropout = dropout
-        self.num_layers=num_layers
+        self.num_layers = num_layers
         self.extra_num = extra_num
         if extra_num >= 1:
             self.edge_layers = torch.nn.ModuleList()
@@ -324,18 +324,26 @@ def main():
         info /= torch.max(info)
         test_neg_list.append(info)
         f.close()
-    train_pos_edge_info = torch.cat(train_pos_list, dim=1)
-    train_neg_edge_info = torch.cat(train_neg_list, dim=1)
-    valid_pos_edge_info = torch.cat(valid_pos_list, dim=1)
-    valid_neg_edge_info = torch.cat(valid_neg_list, dim=1)
-    test_pos_edge_info = torch.cat(test_pos_list, dim=1)
-    test_neg_edge_info = torch.cat(test_neg_list, dim=1)
-    train_pos_edge_info *= args.extra_data_weight
-    train_neg_edge_info *= args.extra_data_weight
-    valid_pos_edge_info *= args.extra_data_weight
-    valid_neg_edge_info *= args.extra_data_weight
-    test_pos_edge_info *= args.extra_data_weight
-    test_neg_edge_info *= args.extra_data_weight
+    if len(args.extra_data_list) > 0:
+        train_pos_edge_info = torch.cat(train_pos_list, dim=1)
+        train_neg_edge_info = torch.cat(train_neg_list, dim=1)
+        valid_pos_edge_info = torch.cat(valid_pos_list, dim=1)
+        valid_neg_edge_info = torch.cat(valid_neg_list, dim=1)
+        test_pos_edge_info = torch.cat(test_pos_list, dim=1)
+        test_neg_edge_info = torch.cat(test_neg_list, dim=1)
+        train_pos_edge_info *= args.extra_data_weight
+        train_neg_edge_info *= args.extra_data_weight
+        valid_pos_edge_info *= args.extra_data_weight
+        valid_neg_edge_info *= args.extra_data_weight
+        test_pos_edge_info *= args.extra_data_weight
+        test_neg_edge_info *= args.extra_data_weight
+    else:
+        train_pos_edge_info = torch.FloatTensor(split_edge['train']['edge'].size(0), 1)
+        train_neg_edge_info = torch.FloatTensor(split_edge['train']['edge'].size(0), 1)
+        valid_pos_edge_info = torch.FloatTensor(split_edge['valid']['edge'].size(0), 1)
+        valid_neg_edge_info = torch.FloatTensor(split_edge['valid']['edge_neg'].size(0), 1)
+        test_pos_edge_info = torch.FloatTensor(split_edge['test']['edge'].size(0), 1)
+        test_neg_edge_info = torch.FloatTensor(split_edge['test']['edge_neg'].size(0), 1)
     if args.model == 'GCN':
         model = GCN(data.num_features + args.node_emb, args.hidden_channels, args.hidden_channels, args.num_layers, args.use_res, args.dropout, device).to(device)
         adj_t = data.adj_t.set_diag()
