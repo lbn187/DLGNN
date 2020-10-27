@@ -8,7 +8,7 @@ int R(int maxv){
 	int y = rand() % 32768;
 	return (x * 32768 + y) % maxv;
 }
-void anchor_distance(char *in_dir, char *out_dir, int num, int maxv){
+void anchor_distance(char *in_dir, char *out_dir, int num){
 	int num_nodes, train_pos_m, train_neg_m, valid_pos_m, valid_neg_m, test_pos_m, test_neg_m;
 	vector<P> train_pos, train_pos2, train_neg, valid_pos, valid_neg, test_pos, test_neg;
 	vector<vector<int> >edge, edge_new;
@@ -28,7 +28,6 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv){
 		edge[x].push_back(y);
 		edge[y].push_back(x);
 	}
-	fclose(stdin);
 	scanf("%d", &train_neg_m);
 	train_neg.resize(train_neg_m);
 	for(int i = 0; i < train_neg_m; i++)
@@ -54,9 +53,10 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv){
 	DSU dsu(num_nodes);
 	for(int i = 0; i < train_pos_m;i++)
 		dsu.merge(train_pos[i].x, train_pos[i].y);
-	for(int i = 0; i < train_pos_m;i++)
+	for(int i = 0; i < num_nodes;i++)
 		if(dsu[i] == dsu[0])vertices1.push_back(i);else vertices2.push_back(i);
 	for(int i = 0; i < num; i++){
+		cerr<<i<<endl;
 		edge_new = edge;
 		for(int x : vertices2){
 			int y = vertices1[R(vertices1.size())];
@@ -66,7 +66,7 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv){
 		int st = R(num_nodes);
 		queue<int>Q;
 		for(int j = 0; j < num_nodes; j++)
-			d[j] = maxv;
+			d[j] = 30;
 		Q.push(st);
 		vis[st] = i;
 		d[st] = 0;
@@ -93,27 +93,27 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv){
 		for(int j = 0; j < test_neg_m; j++)
 			test_neg[j].z += d[test_neg[j].x] + d[test_neg[j].y];
 	}
-	freopen((string(out_dir) + string("train_pos_anchor_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("anchor_distance_train_pos.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < train_pos_m; i++)
 		printf("%.15lf\n", 1.0 * train_pos[i].z / num);
 	fclose(stdout);
-	freopen((string(out_dir) + string("train_neg_anchor_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("anchor_distance_train_neg.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < train_neg_m; i++)
 		printf("%.15lf\n", 1.0 * train_neg[i].z / num);
 	fclose(stdout);
-	freopen((string(out_dir) + string("valid_pos_anchor_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("anchor_distance_valid_pos.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < valid_pos_m; i++)
 		printf("%.15lf\n", 1.0 * valid_pos[i].z / num);
 	fclose(stdout);
-	freopen((string(out_dir) + string("valid_neg_anchor_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("anchor_distance_valid_neg.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < valid_neg_m; i++)
 		printf("%.15lf\n", 1.0 * valid_neg[i].z / num);
 	fclose(stdout);
-	freopen((string(out_dir) + string("test_pos_anchor_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("anchor_distance_test_pos.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < test_pos_m; i++)
 		printf("%.15lf\n", 1.0 * test_pos[i].z / num);
 	fclose(stdout);
-	freopen((string(out_dir) + string("test_neg_anchor_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("anchor_distance_test_neg.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < test_neg_m; i++)
 		printf("%.15lf\n", 1.0 * test_neg[i].z / num);
 	fclose(stdout);

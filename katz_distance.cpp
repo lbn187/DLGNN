@@ -65,27 +65,27 @@ void katz_distance(char *in_dir, char *out_dir, double beta, int max_length){
 				score[i][j] += tmp * dp[i][j];
 			}
 	}
-	freopen((string(out_dir) + string("train_pos_katz_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("katz_distance_train_pos.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < train_pos_m; i++)
 		printf("%.15lf\n", score[train_pos[i].x][train_pos[i].y]);
 	fclose(stdout);
-	freopen((string(out_dir) + string("train_neg_katz_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("katz_distance_train_neg.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < train_neg_m; i++)
 		printf("%.15lf\n", score[train_neg[i].x][train_neg[i].y]);
 	fclose(stdout);
-	freopen((string(out_dir) + string("valid_pos_katz_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("katz_distance_valid_pos.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < valid_pos_m; i++)
 		printf("%.15lf\n", score[valid_pos[i].x][valid_pos[i].y]);
 	fclose(stdout);
-	freopen((string(out_dir) + string("valid_neg_katz_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("katz_distance_valid_neg.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < valid_neg_m; i++)
 		printf("%.15lf\n", score[valid_neg[i].x][valid_neg[i].y]);
 	fclose(stdout);
-	freopen((string(out_dir) + string("test_pos_katz_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("katz_distance_test_pos.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < test_pos_m; i++)
 		printf("%.15lf\n", score[test_pos[i].x][test_pos[i].y]);
 	fclose(stdout);
-	freopen((string(out_dir) + string("test_neg_katz_distance.txt")).c_str(), "w", stdout);
+	freopen((string(out_dir) + string("katz_distance_test_neg.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < test_neg_m; i++)
 		printf("%.15lf\n", score[test_neg[i].x][test_neg[i].y]);
 	fclose(stdout);

@@ -240,8 +240,9 @@ def main():
     parser.add_argument('--eval_epoch', type=int, default=100)
     parser.add_argument('--use_res', type=bool, default=False)
     parser.add_argument('--eval_metric', type=str, default='auc')
-    parser.add_argument('--extra_data_dir', type=str, default='data/')
-    parser.add_argument('--extra_data_list', type=list, default=['random_tree'])
+    parser.add_argument('--extra_data_dir', type=str, default='/blob2/v-bonli/data/')
+    parser.add_argument('--extra_data_list', type=list, default=['random_tree', 'anchor_distance'])
+    parser.add_argument('--extra_data_weight', type=float, default=1.0)
     args = parser.parse_args()
     device = gpu_setup(True, args.device)
     if args.dataset.startswith('ogbl'):
@@ -329,6 +330,12 @@ def main():
     valid_neg_edge_info = torch.cat(valid_neg_list, dim=1)
     test_pos_edge_info = torch.cat(test_pos_list, dim=1)
     test_neg_edge_info = torch.cat(test_neg_list, dim=1)
+    train_pos_edge_info *= args.extra_data_weight
+    train_neg_edge_info *= args.extra_data_weight
+    valid_pos_edge_info *= args.extra_data_weight
+    valid_neg_edge_info *= args.extra_data_weight
+    test_pos_edge_info *= args.extra_data_weight
+    test_neg_edge_info *= args.extra_data_weight
     if args.model == 'GCN':
         model = GCN(data.num_features + args.node_emb, args.hidden_channels, args.hidden_channels, args.num_layers, args.use_res, args.dropout, device).to(device)
         adj_t = data.adj_t.set_diag()
