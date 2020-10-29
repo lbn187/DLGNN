@@ -279,51 +279,53 @@ def main():
         f = open(args.extra_data_dir + extra_data + "_train_pos.txt", "r")
         lines = f.readlines()
         ret = [float(x) for x in lines]
-        info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
-        info -= torch.min(info)
-        info /= torch.max(info)
-        train_pos_list.append(info)
+        train_pos_info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
         f.close()
         f = open(args.extra_data_dir + extra_data + "_train_neg.txt", "r")
         lines = f.readlines()
         ret = [float(x) for x in lines]
-        info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
-        info -= torch.min(info)
-        info /= torch.max(info)
-        train_neg_list.append(info)
+        train_neg_info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
         f.close()
         f = open(args.extra_data_dir + extra_data + "_valid_pos.txt", "r")
         lines = f.readlines()
         ret = [float(x) for x in lines]
-        info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
-        info -= torch.min(info)
-        info /= torch.max(info)
-        valid_pos_list.append(info)
+        valid_pos_info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
         f.close()
         f = open(args.extra_data_dir + extra_data + "_valid_neg.txt", "r")
         lines = f.readlines()
         ret = [float(x) for x in lines]
-        info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
-        info -= torch.min(info)
-        info /= torch.max(info)
-        valid_neg_list.append(info)
+        valid_neg_info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
         f.close()
         f = open(args.extra_data_dir + extra_data + "_test_pos.txt", "r")
         lines = f.readlines()
         ret = [float(x) for x in lines]
-        info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
-        info -= torch.min(info)
-        info /= torch.max(info)
-        test_pos_list.append(info)
+        test_pos_info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
         f.close()
         f = open(args.extra_data_dir + extra_data + "_test_neg.txt", "r")
         lines = f.readlines()
         ret = [float(x) for x in lines]
-        info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
-        info -= torch.min(info)
-        info /= torch.max(info)
-        test_neg_list.append(info)
+        test_neg_info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
         f.close()
+        min_info = torch.min(torch.min(train_pos_info), torch.min(train_neg_info))
+        gap_info = torch.max(torch.max(train_pos_info), torch.max(train_neg_info)) - min_info
+        train_pos_info -= min_info
+        train_pos_info /= gap_info
+        train_neg_info -= min_info
+        train_neg_info /= gap_info
+        valid_pos_info -= min_info
+        valid_pos_info /= gap_info
+        valid_neg_info -= min_info
+        valid_neg_info /= gap_info
+        test_pos_info -= min_info
+        test_pos_info /= gap_info
+        test_neg_info -= min_info
+        test_neg_info /= gap_info
+        train_pos_list.append(train_pos_info)
+        trian_neg_list.append(train_neg_info)
+        valid_pos_list.append(valid_pos_info)
+        valid_neg_list.append(valid_neg_info)
+        test_pos_list.append(test_pos_info)
+        test_neg_list.append(test_neg_info)
     if len(args.extra_data_list) > 0:
         train_pos_edge_info = torch.cat(train_pos_list, dim=1)
         train_neg_edge_info = torch.cat(train_neg_list, dim=1)
