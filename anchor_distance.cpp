@@ -11,7 +11,7 @@ int R(int maxv){
 void anchor_distance(char *in_dir, char *out_dir, int num){
 	int num_nodes, train_pos_m, train_neg_m, valid_pos_m, valid_neg_m, test_pos_m, test_neg_m;
 	vector<P> train_pos, train_pos2, train_neg, valid_pos, valid_neg, test_pos, test_neg;
-	vector<vector<int> >edge, edge_new;
+	vector<vector<int> >edge;
 	vector<int> vis, d, vertices1, vertices2;
 	freopen(in_dir, "r", stdin);
 	scanf("%d", &num_nodes);
@@ -55,25 +55,24 @@ void anchor_distance(char *in_dir, char *out_dir, int num){
 		dsu.merge(train_pos[i].x, train_pos[i].y);
 	for(int i = 0; i < num_nodes;i++)
 		if(dsu[i] == dsu[0])vertices1.push_back(i);else vertices2.push_back(i);
+	for(int x : vertices){
+		int y = vertices1[R(vertices1.size())];
+		edge[x].push_back(y);
+		edge[y].push_back(x);
+	}
 	for(int i = 0; i < num; i++){
 		cerr<<i<<endl;
-		edge_new = edge;
-		for(int x : vertices2){
-			int y = vertices1[R(vertices1.size())];
-			edge_new[x].push_back(y);
-			edge_new[y].push_back(x);
-		}
 		int st = R(num_nodes);
 		queue<int>Q;
 		for(int j = 0; j < num_nodes; j++)
-			d[j] = 30;
+			d[j] = 100;
 		Q.push(st);
 		vis[st] = i;
 		d[st] = 0;
 		while(!Q.empty()){
 			int x = Q.front();
 			Q.pop();
-			for(int y : edge_new[x])
+			for(int y : edge[x])
 				if(vis[y] != i){
 					vis[y] = i;
 					d[y] = d[x] + 1;
