@@ -24,7 +24,6 @@ void katz_distance(char *in_dir, char *out_dir, double beta, int max_length){
 		edge[x].push_back(y);
 		edge[y].push_back(x);
 	}
-	fclose(stdin);
 	scanf("%d", &train_neg_m);
 	train_neg.resize(train_neg_m);
 	for(int i = 0; i < train_neg_m; i++)
@@ -49,6 +48,7 @@ void katz_distance(char *in_dir, char *out_dir, double beta, int max_length){
 	for(int i = 0; i < num_nodes; i++){
 		dp[i].resize(num_nodes);
 		dp_nxt[i].resize(num_nodes);
+		score[i].resize(num_nodes);
 		dp[i][i] = 1.0;
 	}
 	double tmp = 1.0;
