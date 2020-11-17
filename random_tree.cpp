@@ -36,10 +36,9 @@ void random_tree(char *in_dir, char *out_dir, int num){
 	for(int i = 0; i < test_neg_m; i++)
 		scanf("%d%d", &test_neg[i].x, &test_neg[i].y);
 	fclose(stdin);
+	num_nodes++;
 	for(int sample = 0; sample < num; sample++){
-		printf("PROCESS %d\n",sample);
 		random_shuffle(train_pos2.begin(), train_pos2.end());
-		num_nodes++;
 		DSU dsu(num_nodes);
 		Tree tree(num_nodes);
 		for(int i = 0; i < train_pos_m; i++)
