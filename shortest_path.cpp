@@ -29,6 +29,7 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 	for(int i = 0; i < num_nodes; i++)vis[i] = -1;
 	for(int i = 0; i < train_pos_m; i++){
 		int st = train_pos[i].x, ed = train_pos[i].y;
+		bool flag = false;
 		queue<int>Q;
 		Q.push(st);
 		vis[st] = i;
@@ -41,9 +42,10 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;
 					d[y] = d[x] + 1;
-					if(y == ed)break;
+					if(y == ed)flag = true;
 					Q.push(y);
 				}
+			if(flag)break;
 		}
 		printf("%d\n", vis[ed] == i ? d[ed] : maxv);
 	}
@@ -54,6 +56,7 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 	for(int i = 0; i < train_neg_m; i++){
 		int st, ed;
 		queue<int>Q;
+		bool flag = false;
 		scanf("%d%d",&st, &ed);
 		Q.push(st);
 		vis[st] = i;
@@ -66,9 +69,10 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;
 					d[y] = d[x] + 1;
-					if(y == ed)break;
+					if(y == ed)flag = true;
 					Q.push(y);
 				}
+			if(flag)break;
 		}
 		printf("%d\n", vis[ed] == i ? d[ed] : maxv);
 	}
@@ -79,6 +83,7 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 	for(int i = 0; i < valid_pos_m; i++){
 		int st, ed;
 		queue<int>Q;
+		bool flag = false;
 		scanf("%d%d",&st, &ed);
 		Q.push(st);
 		vis[st] = i;
@@ -91,9 +96,10 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;
 					d[y] = d[x] + 1;
-					if(y == ed)break;
+					if(y == ed)flag = true;
 					Q.push(y);
 				}
+			if(flag)break;
 		}
 		printf("%d\n", vis[ed] == i ? d[ed] : maxv);
 	}
@@ -104,6 +110,7 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 	for(int i = 0; i < valid_neg_m; i++){
 		int st, ed;
 		queue<int>Q;
+		bool flag = false;
 		scanf("%d%d",&st, &ed);
 		Q.push(st);
 		vis[st] = i;
@@ -116,9 +123,10 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;
 					d[y] = d[x] + 1;
-					if(y == ed)break;
+					if(y == ed)flag=true;
 					Q.push(y);
 				}
+			if(flag)break;
 		}
 		printf("%d\n", vis[ed] == i ? d[ed] : maxv);
 	}
@@ -129,6 +137,7 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 	for(int i = 0; i < test_pos_m; i++){
 		int st, ed;
 		queue<int>Q;
+		bool flag = false;
 		scanf("%d%d",&st, &ed);
 		Q.push(st);
 		vis[st] = i;
@@ -141,9 +150,10 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;
 					d[y] = d[x] + 1;
-					if(y == ed)break;
+					if(y == ed)flag = true;
 					Q.push(y);
 				}
+			if(flag)break;
 		}
 		printf("%d\n", vis[ed] == i ? d[ed] : maxv);
 	}
@@ -154,6 +164,7 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 	for(int i = 0; i < test_neg_m; i++){
 		int st, ed;
 		queue<int>Q;
+		bool flag = false;
 		scanf("%d%d",&st, &ed);
 		Q.push(st);
 		vis[st] = i;
@@ -166,9 +177,10 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 					if(x == st && y == ed && cnt[make_pair(x, y)] == 1)continue;
 					vis[y] = i;
 					d[y] = d[x] + 1;
-					if(y == ed)break;
+					if(y == ed)flag = true;
 					Q.push(y);
 				}
+			if(flag)break;
 		}
 		printf("%d\n", vis[ed] == i ? d[ed] : maxv);
 	}
