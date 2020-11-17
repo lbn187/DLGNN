@@ -9,6 +9,7 @@ from torch.utils.data import TensorDataset, DataLoader
 import torch_geometric.transforms as T
 from torch_geometric.utils import negative_sampling
 from ogb.linkproppred import PygLinkPropPredDataset, Evaluator
+from torch_sparse import SparseTensor
 from graphsage import GraphSAGE
 from gcn import GCN
 from gat import GAT
@@ -16,7 +17,6 @@ from gat import GAT
 def gpu_setup(use_gpu, gpu_id):
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)  
-
     if torch.cuda.is_available() and use_gpu:
         print('cuda available with GPU:',torch.cuda.get_device_name(0))
         device = torch.device("cuda")
@@ -44,15 +44,12 @@ class Logger(object):
             print(f'   Final Test: {result[argmax, 1]:.2f}')
         else:
             result = 100 * torch.tensor(self.results)
-
             best_results = []
             for r in result:
                 valid = r[:, 0].max().item()
                 test = r[r[:, 0].argmax(), 1].item()
                 best_results.append((valid, test))
-
             best_result = torch.tensor(best_results)
-
             print(f'All runs:')
             r = best_result[:, 0]
             print(f'Highest Valid: {r.mean():.4f} ± {r.std():.4f}')
@@ -75,6 +72,7 @@ class LinkPredictor(nn.Module):
             self.edge_layers.append(torch.nn.Linear(extra_num, 1))
             self.concat_layers = torch.nn.ModuleList()
             self.concat_layers.append(torch.nn.Linear(2, 1))
+    
     def forward(self, x_i, x_j, edge_info):
         y = x_i * x_j
         for layer in self.layers[:-1]:
@@ -96,6 +94,7 @@ class LinkPredictor(nn.Module):
             y = F.dropout(y, p=self.dropout, training=self.training)
         y = self.concat_layers[-1](y)
         return torch.sigmoid(y)
+    
     def reset_parameters(self):
         for layer in self.layers:
             layer.reset_parameters()
@@ -105,15 +104,14 @@ class LinkPredictor(nn.Module):
             for layer in self.concat_layers:
                 layer.reset_parameters()
                 
-def train(model, predictor, emb, data, split_edge, train_pos_edge_info, train_neg_edge_info, optimizer, batch_size, device):
+def train(model, predictor, emb, data, split_edge, train_pos_edge_info, train_neg_edge_info, optimizer, batch_size, ratio, device):
     train_pos_edge = split_edge['train']['edge'].to(device)
-    if 1.0 * train_pos_edge.size(0) / data.num_nodes / data.num_nodes > 0.05:
+    if 1.0 * train_pos_edge.size(0) / data.num_nodes / data.num_nodes > ratio:
         flag = True
     else:
         flag = False
     row, col, _ = data.adj_t.coo()
     edge_index = torch.stack([col, row], dim = 0)
-    
     model.train()
     predictor.train()
     if data.x == None:
@@ -225,30 +223,43 @@ def evaluate_hits(pos_val_pred, neg_val_pred, pos_test_pred, neg_test_pred):
 
 def main():
     parser = argparse.ArgumentParser(description='Link-Pred')
-    parser.add_argument('--dataset', type=str, default='ogbl-ddi')
+    parser.add_argument('--dataset', type=str, default='ogbl-collab')
     parser.add_argument('--model', type=str, default='GraphSAGE')
     parser.add_argument('--device', type=int, default=0)
-    parser.add_argument('--num_layers', type=list, default=[2])
-    parser.add_argument('--node_emb', type=int, default=500)
+    parser.add_argument('--num_layers', type=list, default=[3])
+    parser.add_argument('--node_emb', type=int, default=200)
     parser.add_argument('--hidden_channels', type=int, default=500)
-    parser.add_argument('--dropout', type=float, default=0.3)
+    parser.add_argument('--dropout', type=float, default=0.0)
     parser.add_argument('--batch_size', type=int, default=70000)
-    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--lr', type=float, default=0.005)
     parser.add_argument('--epochs', type=int, default=1000)
     parser.add_argument('--runs', type=int, default=10)
-    parser.add_argument('--use_save', type=bool, default=False)
-    parser.add_argument('--eval_epoch', type=int, default=100)
+    parser.add_argument('--eval_epoch', type=int, default=20)
     parser.add_argument('--use_res', type=bool, default=False)
+    parser.add_argument('--negative_sample_ratio', type=float, default=0.05)
+    parser.add_argument('--use_valedges_as_input', type=bool, default=False)
     parser.add_argument('--eval_metric', type=str, default='auc')
-    parser.add_argument('--extra_data_dir', type=str, default='/blob2/v-bonli/data/')
-    parser.add_argument('--extra_data_list', type=list, default=['random_tree', 'anchor_distance'])
-    parser.add_argument('--extra_data_weight', type=float, default=1.0)
+    parser.add_argument('--extra_data_dir', type=str, default='/blob2/v-bonli/data/collab_')
+    parser.add_argument('--extra_data_list', type=list, default=['random_tree'])
+    parser.add_argument('--extra_data_weight', type=list, default=[1.0])
     args = parser.parse_args()
     device = gpu_setup(True, args.device)
     if args.dataset.startswith('ogbl'):
-        dataset = PygLinkPropPredDataset(name=args.dataset, transform=T.ToSparseTensor())
-        data = dataset[0].to(device)
+        dataset = PygLinkPropPredDataset(name=args.dataset)
+        data = dataset[0]
+        edge_index = data.edge_index
+        if data.x != None:
+            data.x = data.x.to(torch.float)
+        if args.dataset == 'ogbl-collab':
+            data.edge_weight = data.edge_weight.view(-1).to(torch.float)
+        data = T.ToSparseTensor()(data)
         split_edge = dataset.get_edge_split()
+        if args.use_valedges_as_input:
+            val_edge_index = split_edge['valid']['edge'].t()
+            full_edge_index = torch.cat([edge_index, val_edge_index], dim=-1)
+            data.adj_t = SparseTensor.from_edge_index(full_edge_index).t()
+            data.adj_t = data.adj_t.to_symmetric()
+        data = data.to(device)
     if args.dataset == 'ogbl-citation':
         args.eval_metric = 'mrr'
     elif args.dataset.startswith('ogbl'):
@@ -275,7 +286,7 @@ def main():
     valid_neg_list = []
     test_pos_list = []
     test_neg_list = []
-    for extra_data in args.extra_data_list:
+    for extra_data, weight in args.extra_data_list, args.extra_data_weight:
         f = open(args.extra_data_dir + extra_data + "_train_pos.txt", "r")
         lines = f.readlines()
         ret = [float(x) for x in lines]
@@ -305,27 +316,19 @@ def main():
         lines = f.readlines()
         ret = [float(x) for x in lines]
         test_neg_info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
-        f.close()
-        min_info = torch.min(torch.min(train_pos_info), torch.min(train_neg_info))
-        gap_info = torch.max(torch.max(train_pos_info), torch.max(train_neg_info)) - min_info
-        train_pos_info -= min_info
-        train_pos_info /= gap_info
-        train_neg_info -= min_info
-        train_neg_info /= gap_info
-        valid_pos_info -= min_info
-        valid_pos_info /= gap_info
-        valid_neg_info -= min_info
-        valid_neg_info /= gap_info
-        test_pos_info -= min_info
-        test_pos_info /= gap_info
-        test_neg_info -= min_info
-        test_neg_info /= gap_info
-        train_pos_list.append(train_pos_info)
-        trian_neg_list.append(train_neg_info)
-        valid_pos_list.append(valid_pos_info)
-        valid_neg_list.append(valid_neg_info)
-        test_pos_list.append(test_pos_info)
-        test_neg_list.append(test_neg_info)
+        max_info = torch.max(torch.max(train_pos_info), torch.max(train_neg_info))
+        train_pos_info /= max_info
+        train_neg_info /= max_info
+        valid_pos_info /= max_info
+        valid_neg_info /= max_info
+        test_pos_info /= max_info
+        test_neg_info /= max_info
+        train_pos_list.append(train_pos_info * weight)
+        train_neg_list.append(train_neg_info * weight)
+        valid_pos_list.append(valid_pos_info * weight)
+        valid_neg_list.append(valid_neg_info * weight)
+        test_pos_list.append(test_pos_info * weight)
+        test_neg_list.append(test_neg_info * weight)
     if len(args.extra_data_list) > 0:
         train_pos_edge_info = torch.cat(train_pos_list, dim=1)
         train_neg_edge_info = torch.cat(train_neg_list, dim=1)
@@ -333,12 +336,6 @@ def main():
         valid_neg_edge_info = torch.cat(valid_neg_list, dim=1)
         test_pos_edge_info = torch.cat(test_pos_list, dim=1)
         test_neg_edge_info = torch.cat(test_neg_list, dim=1)
-        train_pos_edge_info *= args.extra_data_weight
-        train_neg_edge_info *= args.extra_data_weight
-        valid_pos_edge_info *= args.extra_data_weight
-        valid_neg_edge_info *= args.extra_data_weight
-        test_pos_edge_info *= args.extra_data_weight
-        test_neg_edge_info *= args.extra_data_weight
     else:
         train_pos_edge_info = torch.FloatTensor(split_edge['train']['edge'].size(0), 1)
         train_neg_edge_info = torch.FloatTensor(split_edge['train']['edge'].size(0), 1)
@@ -346,6 +343,12 @@ def main():
         valid_neg_edge_info = torch.FloatTensor(split_edge['valid']['edge_neg'].size(0), 1)
         test_pos_edge_info = torch.FloatTensor(split_edge['test']['edge'].size(0), 1)
         test_neg_edge_info = torch.FloatTensor(split_edge['test']['edge_neg'].size(0), 1)
+    print(train_pos_edge_info.mean())
+    print(train_neg_edge_info.mean())
+    print(valid_pos_edge_info.mean())
+    print(valid_neg_edge_info.mean())
+    print(test_pos_edge_info.mean())
+    print(test_neg_edge_info.mean())
     if args.model == 'GCN':
         model = GCN(data.num_features + args.node_emb, args.hidden_channels, args.hidden_channels, args.num_layers, args.use_res, args.dropout, device).to(device)
         adj_t = data.adj_t.set_diag()
@@ -366,7 +369,7 @@ def main():
         predictor.reset_parameters()
         optimizer = torch.optim.Adam(list(model.parameters()) + list(predictor.parameters()) + list(emb.parameters()), lr=args.lr)
         for epoch in range(1, 1 + args.epochs):
-            loss = train(model, predictor, emb.weight, data, split_edge, train_pos_edge_info, train_neg_edge_info, optimizer, args.batch_size, device)
+            loss = train(model, predictor, emb.weight, data, split_edge, train_pos_edge_info, train_neg_edge_info, optimizer, args.batch_size, args.negative_sample_ratio, device)
             if epoch > args.eval_epoch:
                 results = test(args.eval_metric, model, predictor, emb.weight, data, split_edge, valid_pos_edge_info, valid_neg_edge_info, test_pos_edge_info, test_neg_edge_info, evaluator, args.batch_size, device)
                 for key, result in results.items():
@@ -381,6 +384,8 @@ def main():
         for key in loggers.keys():
             print(key)
             loggers[key].print_statistics(run)
-
+    for key in loggers.keys():
+        print(key)
+        loggers[key].print_statistics()
 if __name__ == "__main__":
     main()
