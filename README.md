@@ -96,6 +96,6 @@ python link_pred.py --extra_data_list anchor_distance --extra_data_weight 1.0 --
 
 python link_pred.py --extra_data_list shortest_path --extra_data_weight 1.0 --extra_data_layer 1
 
-#### All Features
+#### Multiple Features
 
 python link_pred.py --extra_data_list random_tree anchor_distance shortest_path --extra_data_weight 1.0 0.05 1.0 --extra_data_layer 1 1 1
