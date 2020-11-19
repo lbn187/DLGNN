@@ -36,7 +36,7 @@ struct Tree{
 	public:
 		Tree()=default;
 		~Tree(){
-			for(vector<int> x:edge){
+			for(vector<int> x : edge){
 				x.clear();
 				vector<int>(x).swap(x);
 			}

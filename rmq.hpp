@@ -7,7 +7,7 @@ template<typename T> struct RMQ{
 	public:
 		RMQ()=default;
 		~RMQ(){
-			for(vector<T> x:f){
+			for(vector<T> x : f){
 				x.clear();
 				vector<T>(x).swap(x);
 			}

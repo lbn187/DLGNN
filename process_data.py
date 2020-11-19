@@ -4,7 +4,9 @@ from torch_geometric.utils import negative_sampling
 from ogb.linkproppred import PygLinkPropPredDataset
 import argparse
 import random
+from torch_sparse import SparseTensor
 import torch_geometric.transforms as T
+
 def gpu_setup(use_gpu, gpu_id):
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
@@ -15,11 +17,11 @@ def gpu_setup(use_gpu, gpu_id):
         print('cuda not available')
         device = torch.device("cpu")
     return device
+
 def main():
     parser = argparse.ArgumentParser(description='Process-Data')
-    parser.add_argument('--name', type=str, default='ogbl-ppa')
-    parser.add_argument('--dir', type=str, default='/blob2/v-bonli/data/ppa_edges.txt')
-    parser.add_argument('--use_valedges_as_input', type=bool, default=False)
+    parser.add_argument('--name', type=str, default='ogbl-collab')
+    parser.add_argument('--dir', type=str, default='../data/collab_edges.txt')
     parser.add_argument('--gpu', type=int, default=0)
     args = parser.parse_args()
     if args.name.startswith('ogbl'):
@@ -76,17 +78,10 @@ def main():
                     f.write(str(x.item())+"\n")
                 f.close()
             return
-        edge_index = data.edge_index
         valid_pos_edge = split_edge['valid']['edge']
         valid_neg_edge = split_edge['valid']['edge_neg']
         test_pos_edge = split_edge['test']['edge']
         test_neg_edge = split_edge['test']['edge_neg']
-        if args.use_valedges_as_input:
-            val_edge_index = valid_pos_edge.t()
-            full_edge_index = torch.cat([edge_index, val_edge_index], dim=-1)
-            data.adj_t = SparseTensor.from_edge_index(full_edge_index).t()
-            data.adj_t = data.adj_t.to_symmetric()
-            train_pos_edge = torch.cat([train_pos_edge, valid_pos_edge], dim = 1)
         if args.name == 'ogbl-ddi':
             adj_t = data.adj_t.to(device)
             row, col, _ = adj_t.coo()

@@ -6,7 +6,10 @@ struct DSU{
 		vector<int> father;
 	public:
 		DSU()=default;
-		~DSU(){father.clear();vector<int>(father).swap(father);}
+		~DSU(){
+			father.clear();
+			vector<int>(father).swap(father);
+		}
 		DSU(int _n):n(_n){init(n);}
 		void init(int _n){
 			n = _n;

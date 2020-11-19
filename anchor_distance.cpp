@@ -8,7 +8,7 @@ int R(int maxv){
 	int y = rand() % 32768;
 	return (x * 32768 + y) % maxv;
 }
-void anchor_distance(char *in_dir, char *out_dir, int num, int extra_random_edges){
+void anchor_distance(char *in_dir, char *out_dir, int num, int maxv, int extra_random_edges, bool use_val){
 	srand(time(0));
 	int num_nodes, train_pos_m, train_neg_m, valid_pos_m, valid_neg_m, test_pos_m, test_neg_m;
 	vector<P> train_pos, train_pos2, train_neg, valid_pos, valid_neg, test_pos, test_neg;
@@ -52,9 +52,10 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int extra_random_edge
 	for(int i = 0; i < test_neg_m; i++)
 		scanf("%d%d", &test_neg[i].x, &test_neg[i].y);
 	fclose(stdin);
-	for(int i = 0; i < num_nodes; i++)vis[i] = -1;
+	for(int i = 0; i < num_nodes; i++)
+		vis[i] = -1;
 	for(int i = 0; i < num; i++){
-		if(extra_random_edges > 0){
+		if(extra_random_edges > 0 || use_val){
 			for(int j = 0; j < train_pos_m; j++){
 				edge[train_pos[j].x].push_back(train_pos[j].y);
 				edge[train_pos[j].y].push_back(train_pos[j].x);
@@ -69,7 +70,7 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int extra_random_edge
 		int st = R(num_nodes);
 		queue<int>Q;
 		for(int j = 0; j < num_nodes; j++)
-			d[j] = 20;
+			d[j] = maxv;
 		Q.push(st);
 		vis[st] = i;
 		d[st] = 0;
@@ -91,12 +92,35 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int extra_random_edge
 			valid_pos[j].z += d[valid_pos[j].x] + d[valid_pos[j].y];
 		for(int j = 0; j < valid_neg_m; j++)
 			valid_neg[j].z += d[valid_neg[j].x] + d[valid_neg[j].y];
+		if(use_val){
+			for(int j = 0; j < valid_pos_m; j++){
+				edge[valid_pos[j].x].push_back(valid_pos[j].y);
+				edge[valid_pos[j].y].push_back(valid_pos[j].x);
+			}
+			queue<int>Q;
+			for(int j = 0; j < num_nodes; j++){
+				d[j] = maxv;
+				vis[j] = -1;
+			}
+			Q.push(st);
+			d[st] = 0;
+			while(!Q.empty()){
+				int x = Q.front();
+				Q.pop();
+				for(int y : edge[x])
+					if(vis[y] != i){
+						vis[y] = i;
+						d[y] = d[x] + 1;
+						Q.push(y);
+					}
+			}
+		}
 		for(int j = 0; j < test_pos_m; j++)
 			test_pos[j].z += d[test_pos[j].x] + d[test_pos[j].y];
 		for(int j = 0; j < test_neg_m; j++)
 			test_neg[j].z += d[test_neg[j].x] + d[test_neg[j].y];
-		if(extra_random_edges > 0){
-			for(vector<int> x:edge){
+		if(extra_random_edges > 0 || use_val){
+			for(vector<int> x : edge){
 				x.clear();
 				vector<int>(x).swap(x);
 			}

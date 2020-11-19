@@ -2,11 +2,12 @@
 struct P{
 	int x, y;
 };
-void shortest_path(char *in_dir, char *out_dir, int maxv){
+void shortest_path(char *in_dir, char *out_dir, int maxv, bool use_val){
 	int num_nodes, train_pos_m, train_neg_m, valid_pos_m, valid_neg_m, test_pos_m, test_neg_m;
 	vector<P>train_pos;
 	vector<vector<int> > edge;
 	map<pair<int,int>,int> cnt;
+	vector<pair<int,int> >val_edge_list;
 	vector<int> vis, d;
 	freopen(in_dir, "r", stdin);
 	scanf("%d", &num_nodes);
@@ -85,6 +86,7 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 		queue<int>Q;
 		bool flag = false;
 		scanf("%d%d",&st, &ed);
+		if(use_val)val_edge_list.push_back(make_pair(st, ed));
 		Q.push(st);
 		vis[st] = i;
 		d[st] = 0;
@@ -131,6 +133,16 @@ void shortest_path(char *in_dir, char *out_dir, int maxv){
 		printf("%d\n", vis[ed] == i ? d[ed] : maxv);
 	}
 	fclose(stdout);
+	if(use_val){
+		for(pair<int,int> o : val_edge_list){
+			int x = o.first;
+			int y = o.second;
+			edge[x].push_back(y);
+			edge[y].push_back(x);
+			cnt[make_pair(x, y)]++;
+			cnt[make_pair(y, x)]++;
+		}
+	}
 	freopen((string(out_dir) + string("shortest_path_test_pos.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < num_nodes; i++)vis[i] = -1;
 	scanf("%d", &test_pos_m);

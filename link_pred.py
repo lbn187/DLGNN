@@ -57,7 +57,7 @@ class Logger(object):
             print(f'   Final Test: {r.mean():.4f} ± {r.std():.4f}')
 
 class LinkPredictor(nn.Module):
-    def __init__(self, in_dim, hidden_dim, out_dim, num_layers, dropout, extra_num, device):
+    def __init__(self, in_dim, hidden_dim, out_dim, num_layers, dropout, extra_data_layer, device):
         super().__init__()
         self.layers = torch.nn.ModuleList()
         self.layers.append(torch.nn.Linear(in_dim, hidden_dim))
@@ -66,12 +66,15 @@ class LinkPredictor(nn.Module):
         self.layers.append(torch.nn.Linear(hidden_dim, out_dim))
         self.dropout = dropout
         self.num_layers = num_layers
-        self.extra_num = extra_num
-        if extra_num >= 1:
-            self.edge_layers = torch.nn.ModuleList()
-            self.edge_layers.append(torch.nn.Linear(extra_num, 1))
-            self.concat_layers = torch.nn.ModuleList()
-            self.concat_layers.append(torch.nn.Linear(2, 1))
+        self.extra_num = len(extra_data_layer)
+        self.edge_layers = torch.nn.ModuleList()
+        for layer in extra_data_layer:
+            new_layer = torch.nn.ModuleList()
+            for _ in range(layer):
+                new_layer.append(torch.nn.Linear(1, 1))
+            self.edge_layers.append(new_layer)
+        self.concat_layers = torch.nn.ModuleList()
+        self.concat_layers.append(torch.nn.Linear(self.extra_num + out_dim, 1))
     
     def forward(self, x_i, x_j, edge_info):
         y = x_i * x_j
@@ -82,12 +85,16 @@ class LinkPredictor(nn.Module):
         y = self.layers[-1](y)
         if self.extra_num == 0:
             return torch.sigmoid(y)
-        for layer in self.edge_layers[:-1]:
-            edge_info = layer(edge_info)
-            edge_info = F.relu(edge_info)
-            edge_info = F.dropout(edge_info, p=self.dropout, training=self.training)
-        edge_info = self.edge_layers[-1](edge_info)
-        y = torch.cat([y, edge_info], dim = 1)
+        i = 0
+        new_edge_info = torch.unsqueeze(edge_info, 2)
+        for layer_list in self.edge_layers:
+            tmp_edge_info = new_edge_info[:, i]
+            for layer in layer_list[:-1]:
+                tmp_edge_info = layer(tmp_edge_info)
+                tmp_edge_info = F.relu(tmp_edge_info)
+            tmp_edge_info = layer_list[-1](tmp_edge_info)
+            i = i + 1
+            y = torch.cat([y, tmp_edge_info], dim = 1)
         for layer in self.concat_layers[:-1]:
             y = layer(y)
             y = F.relu(y)
@@ -99,8 +106,9 @@ class LinkPredictor(nn.Module):
         for layer in self.layers:
             layer.reset_parameters()
         if self.extra_num >= 1:
-            for layer in self.edge_layers:
-                layer.reset_parameters()
+            for layer_list in self.edge_layers:
+                for layer in layer_list:
+                    layer.reset_parameters()
             for layer in self.concat_layers:
                 layer.reset_parameters()
                 
@@ -158,12 +166,12 @@ def test(eval_metric, model, predictor, emb, data, split_edge, valid_pos_edge_in
         x = emb
     else:
         x = torch.cat([emb, data.x.to(device)], dim = 1)
-    h = model(x, data.adj_t)
     valid_pos_edge = split_edge['valid']['edge']
     valid_neg_edge = split_edge['valid']['edge_neg']
     test_pos_edge = split_edge['test']['edge']
     test_neg_edge = split_edge['test']['edge_neg']
     if eval_metric == 'hits':
+        h = model(x, data.adj_t)
         pos_valid_preds = []
         for perm in DataLoader(range(valid_pos_edge.size(0)), batch_size):
             edge = valid_pos_edge[perm].t()
@@ -179,6 +187,7 @@ def test(eval_metric, model, predictor, emb, data, split_edge, valid_pos_edge_in
             neg_valid_preds += [neg_out.squeeze().cpu()]
         neg_valid_pred = torch.cat(neg_valid_preds, dim = 0)
         pos_test_preds = []
+        h = model(x, data.full_adj_t)
         for perm in DataLoader(range(test_pos_edge.size(0)), batch_size):
             edge = test_pos_edge[perm].t()
             edge_info = test_pos_edge_info[perm].to(device)
@@ -205,22 +214,7 @@ def test(eval_metric, model, predictor, emb, data, split_edge, valid_pos_edge_in
             })[f'hits@{K}']
             results[f'Hits@{K}'] = (valid_hits, test_hits)
         return results
-
-def evaluate_hits(pos_val_pred, neg_val_pred, pos_test_pred, neg_test_pred):
-    results = {}
-    for K in [20, 50, 100]:
-        evaluator.K = K
-        valid_hits = evaluator.eval({
-            'y_pred_pos': pos_val_pred,
-            'y_pred_neg': neg_val_pred,
-        })[f'hits@{K}']
-        test_hits = evaluator.eval({
-            'y_pred_pos': pos_test_pred,
-            'y_pred_neg': neg_test_pred,
-        })[f'hits@{K}']
-        results[f'Hits@{K}'] = (valid_hits, test_hits)
-    return results
-
+            
 def main():
     parser = argparse.ArgumentParser(description='Link-Pred')
     parser.add_argument('--dataset', type=str, default='ogbl-collab')
@@ -229,19 +223,21 @@ def main():
     parser.add_argument('--num_layers', type=list, default=[3])
     parser.add_argument('--node_emb', type=int, default=200)
     parser.add_argument('--hidden_channels', type=int, default=500)
-    parser.add_argument('--dropout', type=float, default=0.0)
+    parser.add_argument('--dropout', type=float, default=0.1)
     parser.add_argument('--batch_size', type=int, default=70000)
-    parser.add_argument('--lr', type=float, default=0.005)
+    parser.add_argument('--lr', type=float, default=0.003)
     parser.add_argument('--epochs', type=int, default=1000)
     parser.add_argument('--runs', type=int, default=10)
-    parser.add_argument('--eval_epoch', type=int, default=20)
+    parser.add_argument('--eval_epoch', type=int, default=0)
     parser.add_argument('--use_res', type=bool, default=False)
+    parser.add_argument('--out_dim', type=int, default=1)
     parser.add_argument('--negative_sample_ratio', type=float, default=0.05)
     parser.add_argument('--use_valedges_as_input', type=bool, default=False)
     parser.add_argument('--eval_metric', type=str, default='auc')
-    parser.add_argument('--extra_data_dir', type=str, default='/blob2/v-bonli/data/collab_')
+    parser.add_argument('--extra_data_dir', type=str, default='../data/collab_')
     parser.add_argument('--extra_data_list', type=list, default=['random_tree'])
     parser.add_argument('--extra_data_weight', type=list, default=[1.0])
+    parser.add_argument('--extra_data_layer', type=list, default=[1])
     args = parser.parse_args()
     device = gpu_setup(True, args.device)
     if args.dataset.startswith('ogbl'):
@@ -257,8 +253,10 @@ def main():
         if args.use_valedges_as_input:
             val_edge_index = split_edge['valid']['edge'].t()
             full_edge_index = torch.cat([edge_index, val_edge_index], dim=-1)
-            data.adj_t = SparseTensor.from_edge_index(full_edge_index).t()
-            data.adj_t = data.adj_t.to_symmetric()
+            data.full_adj_t = SparseTensor.from_edge_index(full_edge_index).t()
+            data.full_adj_t = data.full_adj_t.to_symmetric()
+        else:
+            data.full_adj_t = data.adj_t
         data = data.to(device)
     if args.dataset == 'ogbl-citation':
         args.eval_metric = 'mrr'
@@ -286,7 +284,10 @@ def main():
     valid_neg_list = []
     test_pos_list = []
     test_neg_list = []
-    for extra_data, weight in args.extra_data_list, args.extra_data_weight:
+    cnt = 0
+    for extra_data in args.extra_data_list:
+        weight = args.extra_data_weight[cnt]
+        cnt = cnt + 1
         f = open(args.extra_data_dir + extra_data + "_train_pos.txt", "r")
         lines = f.readlines()
         ret = [float(x) for x in lines]
@@ -351,17 +352,11 @@ def main():
     print(test_neg_edge_info.mean())
     if args.model == 'GCN':
         model = GCN(data.num_features + args.node_emb, args.hidden_channels, args.hidden_channels, args.num_layers, args.use_res, args.dropout, device).to(device)
-        adj_t = data.adj_t.set_diag()
-        deg = adj_t.sum(dim = 1).to(torch.float)
-        deg_inv_sqrt = deg.pow(-0.5)
-        deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0
-        adj_t = deg_inv_sqrt.view(-1, 1) * adj_t * deg_inv_sqrt.view(1, -1)
-        data.adj_t = adj_t
     elif args.model == 'GraphSAGE':
         model = GraphSAGE(data.num_features + args.node_emb, args.hidden_channels, args.hidden_channels, args.num_layers, args.use_res, args.dropout, device).to(device)
     elif args.model == 'GAT':
         model = GAT(data.num_features + args.node_emb, args.hidden_channels, args.hidden_channels, args.num_layers, args.use_res, args.dropout, device).to(device)
-    predictor = LinkPredictor(args.hidden_channels, args.hidden_channels, 1, 3, args.dropout, len(args.extra_data_list), device).to(device)
+    predictor = LinkPredictor(args.hidden_channels, args.hidden_channels, args.out_dim, 3, args.dropout, args.extra_data_layer, device).to(device)
     emb = torch.nn.Embedding(data.num_nodes, args.node_emb).to(device)
     for run in range(args.runs):
         torch.nn.init.xavier_uniform_(emb.weight)
@@ -377,15 +372,16 @@ def main():
                     valid_hits, test_hits = result
                     print(key)
                     print(f'Run: {run + 1:02d}, '
-                          f'Epoch: {epoch:02d}, '
-                          f'Loss: {loss:.4f}, '
-                          f'Valid: {100 * valid_hits:.2f}%, '
-                          f'Test: {100 * test_hits:.2f}%, ')
+                        f'Epoch: {epoch:02d}, '
+                        f'Loss: {loss:.4f}, '
+                        f'Valid: {100 * valid_hits:.2f}%, '
+                        f'Test: {100 * test_hits:.2f}%, ')
         for key in loggers.keys():
             print(key)
             loggers[key].print_statistics(run)
     for key in loggers.keys():
         print(key)
         loggers[key].print_statistics()
+
 if __name__ == "__main__":
     main()
