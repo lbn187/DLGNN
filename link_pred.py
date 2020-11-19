@@ -235,9 +235,9 @@ def main():
     parser.add_argument('--use_valedges_as_input', type=bool, default=False)
     parser.add_argument('--eval_metric', type=str, default='auc')
     parser.add_argument('--extra_data_dir', type=str, default='../data/collab_')
-    parser.add_argument('--extra_data_list', type=str, nargs='+', default=['random_tree'])
-    parser.add_argument('--extra_data_weight', type=float, nargs='+', default=[1.0])
-    parser.add_argument('--extra_data_layer', type=int, nargs='+', default=[1])
+    parser.add_argument('--extra_data_list', type=str, nargs='+', default=[])
+    parser.add_argument('--extra_data_weight', type=float, nargs='+', default=[])
+    parser.add_argument('--extra_data_layer', type=int, nargs='+', default=[])
     args = parser.parse_args()
     device = gpu_setup(True, args.device)
     if args.dataset.startswith('ogbl'):
