@@ -6,7 +6,7 @@ python process_data.py --name $DATASET --dir $EDGE_DIR
 
 ## Generate Feature
 
-g++ -std=c++11 -o generate_feature generate_feature.cpp random_tree.cpp shortest_path.cpp katz_distance.cpp anchor_distance.cpp
+g++ -std=c++11 -o generate_feature generate_feature.cpp random_tree.cpp shortest_path.cpp katz_distance.cpp anchor_distance.cpp common_neighbors.cpp jaccard_coefficient.cpp adamic_adar.cpp resource_allocation.cpp
 
 ### Random Tree
 
@@ -23,6 +23,10 @@ g++ -std=c++11 -o generate_feature generate_feature.cpp random_tree.cpp shortest
 ### Katz Distance
 
 ./generate_feature katz_distance $EDGE_DIR $INFO_DIR $BETA $MAX_LENGTH
+
+### Common Neighbors & Jaccard Coefficient & Adamic Adar & Resource Allocation
+
+./generate_feature common_neighbors/jaccard_coefficient/adamic_adar/resource_allocation $USE_VAL
 
 ## Run Jobs
 
