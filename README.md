@@ -11,10 +11,20 @@ ogb>=1.2.3
 # Process Data
 
     python process_data.py --name $DATASET --dir $EDGE_DIR
+    
+In this step, the edges of the datasets are stored in the specified location to prepare for the next step of extracting information. $DATASET is the data we process, it can be "ogbl-ddi", "ogbl-collab" or "ogbl-ppa". $EDGE_DIR is the place we store the edges.
 
 # Generate Feature
 
+Compile:
+
     g++ -std=c++11 -o generate_feature generate_feature.cpp random_tree.cpp shortest_path.cpp katz_distance.cpp anchor_distance.cpp common_neighbors.cpp jaccard_coefficient.cpp adamic_adar.cpp resource_allocation.cpp
+    
+Generate Feature:
+
+    ./generate_feature $FEATURE_NAME $EDGE_DIR $INFO_DIR <$NUM_TREES> <$NUM_ANCHOR_NODES> <$MAX_DISTANCE> <$EXTRA_RANDOM_EDGES> <$BETA> <$MAX_LENGTH> <$USE_VAL>
+
+$FEATURE_NAME is the name of feature. $EDGE_DIR is the place we store the edges. $INFO_DIR is the place we store edges' infomation. $NUM_TREES is the random tree we generated. $NUM_ANCHOR_NODES is the anchor nodes we selected. $MAX_DISTANCE is the default maximum distance. $EXTRA_RANDOM_EDGES$ is the number of random edges we added to the graph each time we select a anchor node. $BETA is the parameter of Katz Index. $MAX_LENGTH is the maximum number of steps. $USE_VAL is whether we use the validation data as the input of test data.
 
 ## Random Tree
 
