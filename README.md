@@ -116,14 +116,14 @@ $MAX_DISTANCE = 40
 
 #### BaseLine
 
-python link_pred.py --datsaet ogbl-ppa --model GCN --num_layers 3 --node_emb 200 --hidden_channels 500 --dropout 0.1 --batch_size 70000 --lr 0.01 --epochs 100 --eval_epoch 20 --use_res True
+python link_pred.py --datsaet ogbl-ppa --model GCN --num_layers 3 --node_emb 200 --hidden_channels 500 --dropout 0.1 --batch_size 70000 --lr 0.001 --epochs 200 --eval_epoch 20 --use_res True
 
 #### One Feature
 
-python link_pred.py --extra_data_list random_tree --extra_data_weight 0.05 --extra_data_layer 1
+python link_pred.py --extra_data_list random_tree --extra_data_weight 0.03 --extra_data_layer 1
 
-python link_pred.py --extra_data_list anchor_distance --extra_data_weight 0.05 --extra_data_layer 1
+python link_pred.py --extra_data_list anchor_distance --extra_data_weight 0.01 --extra_data_layer 1
 
 #### Multiple Features
 
-python link_pred.py --extra_data_list random_tree anchor_distance --extra_data_weight 0.01 0.05 --extra_data_layer 1 1
+python link_pred.py --extra_data_list random_tree anchor_distance --extra_data_weight 0.01 0.03 --extra_data_layer 1 1
