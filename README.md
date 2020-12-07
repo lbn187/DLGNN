@@ -11,9 +11,7 @@ ogb>=1.2.3
 # Process Data
 
 '''
-
 python process_data.py --name $DATASET --dir $EDGE_DIR
-
 '''
 
 # Generate Feature
