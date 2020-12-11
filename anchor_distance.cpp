@@ -99,7 +99,7 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv, bool use_mi
 			if(use_min)train_pos[j].z = min(train_pos[j].z, d[train_pos[j].x] + d[train_pos[j].y] > 1 ? d[train_pos[j].x] + d[train_pos[j].y] : train_pos[j].z);
 			else train_pos[j].z += d[train_pos[j].x] + d[train_pos[j].y];
 		for(int j = 0; j < train_neg_m; j++)
-			if(use_min)train_neg[j].z = min(train_neg[j].z, d[train_neg[j].x] + d[train_neg[j].y] ? 1 ? d[train_neg[j].x] + d[train_neg[j].y] : train_neg[j].z);
+			if(use_min)train_neg[j].z = min(train_neg[j].z, d[train_neg[j].x] + d[train_neg[j].y] > 1 ? d[train_neg[j].x] + d[train_neg[j].y] : train_neg[j].z);
 			else train_neg[j].z += d[train_neg[j].x] + d[train_neg[j].y];
 		for(int j = 0; j < valid_pos_m; j++)
 			if(use_min)valid_pos[j].z = min(valid_pos[j].z, d[valid_pos[j].x] + d[valid_pos[j].y] > 1 ? d[valid_pos[j].x] + d[valid_pos[j].y] : valid_pos[j].z);
