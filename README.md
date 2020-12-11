@@ -22,9 +22,9 @@ Compile:
     
 Generate Feature:
 
-    ./generate_feature $FEATURE_NAME $EDGE_DIR $INFO_DIR <$NUM_TREES> <$NUM_ANCHOR_NODES> <$MAX_DISTANCE> <$EXTRA_RANDOM_EDGES> <$BETA> <$MAX_LENGTH> <$USE_VAL>
+    ./generate_feature $FEATURE_NAME $EDGE_DIR $INFO_DIR <$NUM_TREES> <$NUM_ANCHOR_NODES> <$MAX_DISTANCE> <$USE_MIN_ANCHOR> <$EXTRA_RANDOM_EDGES> <$BETA> <$MAX_LENGTH> <$USE_VAL>
 
-$FEATURE_NAME is the name of feature. $EDGE_DIR is the place we store the edges. $INFO_DIR is the place we store edges' infomation. $NUM_TREES is the random tree we generated. $NUM_ANCHOR_NODES is the anchor nodes we selected. $MAX_DISTANCE is the default maximum distance. $EXTRA_RANDOM_EDGES$ is the number of random edges we added to the graph each time we select a anchor node. $BETA is the parameter of Katz Index. $MAX_LENGTH is the maximum number of steps. $USE_VAL is whether we use the validation data as the input of test data.
+$FEATURE_NAME is the name of feature. $EDGE_DIR is the place we store the edges. $INFO_DIR is the place we store edges' infomation. $NUM_TREES is the random tree we generated. $NUM_ANCHOR_NODES is the anchor nodes we selected. $MAX_DISTANCE is the default maximum distance. $USE_MIN_ANCHOR is whether use the minimum $EXTRA_RANDOM_EDGES$ is the number of random edges we added to the graph each time we select a anchor node. $BETA is the parameter of Katz Index. $MAX_LENGTH is the maximum number of steps. $USE_VAL is whether we use the validation data as the input of test data.
 
 ## Random Tree
 
@@ -32,7 +32,7 @@ $FEATURE_NAME is the name of feature. $EDGE_DIR is the place we store the edges.
 
 ## Anchor Distance
 
-    ./generate_feature anchor_distance $EDGE_DIR $INFO_DIR $NUM_ANCHOR_NODES $MAX_DISTANCE $EXTRA_RANDOM_EDGES $USE_VAL
+    ./generate_feature anchor_distance $EDGE_DIR $INFO_DIR $NUM_ANCHOR_NODES $MAX_DISTANCE $USE_MIN_ANCHOR $EXTRA_RANDOM_EDGES $USE_VAL
 
 ## Shortest Path
 
