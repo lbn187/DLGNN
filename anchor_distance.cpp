@@ -26,7 +26,7 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv, bool use_mi
 		scanf("%d%d", &x, &y);
 		train_pos[i].x = x;
 		train_pos[i].y = y;
-		if(use_min)train_neg[i].z = maxv * 2;
+		if(use_min)train_pos[i].z = maxv * 2;
 		if(extra_random_edges == 0){
 			edge[x].push_back(y);
 			edge[y].push_back(x);
