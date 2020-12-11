@@ -96,16 +96,16 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv, bool use_mi
 				}
 		}
 		for(int j = 0; j < train_pos_m; j++)
-			if(use_min)train_pos[j].z = min(train_pos[j].z, d[train_pos[j].x] + d[train_pos[j].y]);
+			if(use_min)train_pos[j].z = min(train_pos[j].z, d[train_pos[j].x] + d[train_pos[j].y] > 1 ? d[train_pos[j].x] + d[train_pos[j].y] : train_pos[j].z);
 			else train_pos[j].z += d[train_pos[j].x] + d[train_pos[j].y];
 		for(int j = 0; j < train_neg_m; j++)
-			if(use_min)train_neg[j].z = min(train_neg[j].z, d[train_neg[j].x] + d[train_neg[j].y]);
+			if(use_min)train_neg[j].z = min(train_neg[j].z, d[train_neg[j].x] + d[train_neg[j].y] ? 1 ? d[train_neg[j].x] + d[train_neg[j].y] : train_neg[j].z);
 			else train_neg[j].z += d[train_neg[j].x] + d[train_neg[j].y];
 		for(int j = 0; j < valid_pos_m; j++)
-			if(use_min)valid_pos[j].z = min(valid_pos[j].z, d[valid_pos[j].x] + d[valid_pos[j].y]);
+			if(use_min)valid_pos[j].z = min(valid_pos[j].z, d[valid_pos[j].x] + d[valid_pos[j].y] > 1 ? d[valid_pos[j].x] + d[valid_pos[j].y] : valid_pos[j].z);
 			else valid_pos[j].z += d[valid_pos[j].x] + d[valid_pos[j].y];
 		for(int j = 0; j < valid_neg_m; j++)
-			if(use_min)valid_neg[j].z = min(valid_neg[j].z, d[valid_neg[j].x] + d[valid_neg[j].y]);
+			if(use_min)valid_neg[j].z = min(valid_neg[j].z, d[valid_neg[j].x] + d[valid_neg[j].y] > 1 ? d[valid_neg[j].x] + d[valid_neg[j].y] : valid_neg[j].z);
 			else valid_neg[j].z += d[valid_neg[j].x] + d[valid_neg[j].y];
 		if(use_val){
 			for(int j = 0; j < valid_pos_m; j++){
@@ -131,10 +131,10 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv, bool use_mi
 			}
 		}
 		for(int j = 0; j < test_pos_m; j++)
-			if(use_min)test_pos[j].z = min(test_pos[j].z, d[test_pos[j].x] + d[test_pos[j].y]);
+			if(use_min)test_pos[j].z = min(test_pos[j].z, d[test_pos[j].x] + d[test_pos[j].y] > 1 ? d[test_pos[j].x] + d[test_pos[j].y] : test_pos[j].z);
 			else test_pos[j].z += d[test_pos[j].x] + d[test_pos[j].y];
 		for(int j = 0; j < test_neg_m; j++)
-			if(use_min)test_neg[j].z = min(test_neg[j].z, d[test_neg[j].x] + d[test_neg[j].y]);
+			if(use_min)test_neg[j].z = min(test_neg[j].z, d[test_neg[j].x] + d[test_neg[j].y] > 1 ? d[test_neg[j].x] + d[test_neg[j].y] : test_neg[j].z);
 			else test_neg[j].z += d[test_neg[j].x] + d[test_neg[j].y];
 		if(extra_random_edges > 0 || use_val){
 			for(vector<int> x : edge){
