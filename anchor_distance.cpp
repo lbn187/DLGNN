@@ -12,7 +12,7 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv, bool use_mi
 	srand(time(0));
 	int num_nodes, train_pos_m, train_neg_m, valid_pos_m, valid_neg_m, test_pos_m, test_neg_m;
 	vector<P> train_pos, train_pos2, train_neg, valid_pos, valid_neg, test_pos, test_neg;
-	vector<int> vis, d, vertices1, vertices2;
+	vector<int> vis, d, vertices1, vertices2, sum_d;
 	vector<vector<int> >edge;
 	freopen(in_dir, "r", stdin);
 	scanf("%d", &num_nodes);
@@ -63,8 +63,10 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv, bool use_mi
 		if(use_min)test_neg[i].z = maxv * 2;
 	}
 	fclose(stdin);
-	for(int i = 0; i < num_nodes; i++)
+	for(int i = 0; i < num_nodes; i++){
 		vis[i] = -1;
+		sum_d[i] = 0;
+	}
 	for(int i = 0; i < num; i++){
 		if(extra_random_edges > 0 || use_val){
 			for(int j = 0; j < train_pos_m; j++){
@@ -107,6 +109,8 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv, bool use_mi
 		for(int j = 0; j < valid_neg_m; j++)
 			if(use_min)valid_neg[j].z = min(valid_neg[j].z, d[valid_neg[j].x] + d[valid_neg[j].y] > 1 ? d[valid_neg[j].x] + d[valid_neg[j].y] : valid_neg[j].z);
 			else valid_neg[j].z += d[valid_neg[j].x] + d[valid_neg[j].y];
+		for(int j = 0; j < num_nodes; j++)
+			sum_d[j] += d[j];
 		if(use_val){
 			for(int j = 0; j < valid_pos_m; j++){
 				edge[valid_pos[j].x].push_back(valid_pos[j].y);
@@ -166,5 +170,9 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv, bool use_mi
 	freopen((string(out_dir) + string("anchor_distance_test_neg.txt")).c_str(), "w", stdout);
 	for(int i = 0; i < test_neg_m; i++)
 		printf("%.15lf\n", 1.0 * test_neg[i].z / num);
+	fclose(stdout);
+	freopen((string(out_dir) + string("anchor_distance_node.txt")).c_str(), "w", stdout);
+	for(int i = 0; i < num_nodes; i++)
+		printf("%.15lf\n", 1.0 * sum_d[i] / num);
 	fclose(stdout);
 }
