@@ -317,6 +317,7 @@ def main():
         lines = f.readlines()
         ret = [float(x) for x in lines]
         test_neg_info = torch.FloatTensor(np.array(ret).reshape(-1, 1))
+        f.close()
         max_info = torch.max(torch.max(train_pos_info), torch.max(train_neg_info))
         train_pos_info /= max_info
         train_neg_info /= max_info
