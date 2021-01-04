@@ -16,7 +16,7 @@ int main(int argc, char *argv[]){
 	}else if(string(argv[1]) == "katz_distance"){
 		katz_distance(argv[2], argv[3], argc < 5 ? 0.03 : atof(argv[4]), argc < 6 ? 10 : atoi(argv[5]));
 	}else if(string(argv[1]) == "anchor_distance"){
-		anchor_distance(argv[2], argv[3], argc < 5 ? 10000 : atoi(argv[4]), argc < 6 ? 20 : atoi(argv[5]), argc < 7 ? true : atoi(argv[6]), argc < 8 ? 0 : atoi(argv[7]), argc < 9 ? false : atoi(argv[8]));
+		anchor_distance(argv[2], argv[3], argc < 5 ? 10000 : atoi(argv[4]), argc < 6 ? 20 : atoi(argv[5]), argc < 7 ? false : atoi(argv[6]), argc < 8 ? 0 : atoi(argv[7]), argc < 9 ? false : atoi(argv[8]));
 	}else if(string(argv[1]) == "adamic_adar"){
 		adamic_adar(argv[2], argv[3], argc < 5 ? 0 : atoi(argv[4]));
 	}else if(string(argv[1]) == "common_neighbors"){
