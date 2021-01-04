@@ -145,6 +145,7 @@ def train(model, predictor, emb, data, split_edge, train_pos_edge_info, node_inf
             edge = torch.randint(0, data.num_nodes, edge.size(), dtype=torch.long, device=device)
         #edge_info = train_neg_edge_info[perms[cnt]].to(device)
         edge_info = node_info[edge[0]] + node_info[edge[1]]
+        edge_info = edge_info.to(device)
         #cnt = cnt + 1
         neg_out = predictor(h[edge[0]], h[edge[1]], edge_info)
         neg_loss = -torch.log(1.0 - neg_out + 1e-15).mean()
@@ -218,26 +219,26 @@ def test(eval_metric, model, predictor, emb, data, split_edge, valid_pos_edge_in
             
 def main():
     parser = argparse.ArgumentParser(description='Link-Pred')
-    parser.add_argument('--dataset', type=str, default='ogbl-collab')
-    parser.add_argument('--model', type=str, default='GCN')
+    parser.add_argument('--dataset', type=str, default='ogbl-ddi')
+    parser.add_argument('--model', type=str, default='GraphSAGE')
     parser.add_argument('--device', type=int, default=0)
-    parser.add_argument('--num_layers', type=int, nargs='+', default=[3])
-    parser.add_argument('--node_emb', type=int, default=200)
+    parser.add_argument('--num_layers', type=int, nargs='+', default=[2])
+    parser.add_argument('--node_emb', type=int, default=500)
     parser.add_argument('--hidden_channels', type=int, default=500)
-    parser.add_argument('--dropout', type=float, default=0.1)
+    parser.add_argument('--dropout', type=float, default=0.3)
     parser.add_argument('--batch_size', type=int, default=70000)
     parser.add_argument('--lr', type=float, default=0.003)
-    parser.add_argument('--epochs', type=int, default=1000)
-    parser.add_argument('--runs', type=int, default=1)
+    parser.add_argument('--epochs', type=int, default=500)
+    parser.add_argument('--runs', type=int, default=100)
     parser.add_argument('--eval_epoch', type=int, default=100)
     parser.add_argument('--use_res', type=bool, default=False)
     parser.add_argument('--out_dim', type=int, default=1)
     parser.add_argument('--negative_sample_ratio', type=float, default=0.05)
     parser.add_argument('--use_valedges_as_input', type=bool, default=False)
     parser.add_argument('--eval_metric', type=str, default='auc')
-    parser.add_argument('--extra_data_dir', type=str, default='../../data/collab_')
-    parser.add_argument('--extra_data_list', type=str, nargs='+', default=['adamic_adar'])
-    parser.add_argument('--extra_data_weight', type=float, nargs='+', default=[1.0])
+    parser.add_argument('--extra_data_dir', type=str, default='../../data/ddi2_')
+    parser.add_argument('--extra_data_list', type=str, nargs='+', default=['anchor_distance'])
+    parser.add_argument('--extra_data_weight', type=float, nargs='+', default=[0.1])
     parser.add_argument('--extra_data_layer', type=int, nargs='+', default=[2])
     args = parser.parse_args()
     device = gpu_setup(True, args.device)
@@ -285,6 +286,7 @@ def main():
     valid_neg_list = []
     test_pos_list = []
     test_neg_list = []
+    node_info_list = []
     cnt = 0
     for extra_data in args.extra_data_list:
         weight = args.extra_data_weight[cnt]
@@ -382,12 +384,14 @@ def main():
                 for key, result in results.items():
                     loggers[key].add_result(run, result)
                     valid_hits, test_hits = result
+                    '''
                     print(key)
                     print(f'Run: {run + 1:02d}, '
                         f'Epoch: {epoch:02d}, '
                         f'Loss: {loss:.4f}, '
                         f'Valid: {100 * valid_hits:.2f}%, '
                         f'Test: {100 * test_hits:.2f}%, ')
+                    '''
         for key in loggers.keys():
             print(key)
             loggers[key].print_statistics(run)
