@@ -88,4 +88,4 @@ python link_pred.py --extra_data_dir './DDI_info'  \
 ```
 
 ### Results
-We repeat the experiments for 30 times. The validation Hits@20 is `82.0566 $$\pm$$ 2.9849`. The test Hits@20 is `82.3877 $$\pm$$ 4.3709`.
+We repeat the experiments for 30 times. The validation Hits@20 is `82.0566 \pm 2.9849`. The test Hits@20 is `82.3877 \pm 4.3709`.
