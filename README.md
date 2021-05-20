@@ -1,20 +1,23 @@
-# Requirements
+#  Distance-Enhanced Graph Neural Network for Link Prediction
 
-Python>=3.6
+We propose a simple yet effective method for link predciton, where the GNN is incorported with a distance, and we can observer performance improvement.
 
-PyTorch>=1.2
+## Requirements
 
-torch-geometric>=1.6.0
+- Python>=3.6
+- PyTorch>=1.2
+- torch-geometric>=1.6.0
+- ogb>=1.2.3
 
-ogb>=1.2.3
-
-# Process Data
+## Step-1: Data Porcessing
 
     python process_data.py --name $DATASET --dir $EDGE_DIR
     
-In this step, the edges of the datasets are stored in the specified location to prepare for the next step of extracting information. $DATASET is the data we process, it can be "ogbl-ddi", "ogbl-collab" or "ogbl-ppa". $EDGE_DIR is the place we store the edges.
+In this step, the edges of the datasets are stored in `$EDGE_DIR` to prepare for the next step of extracting information. 
+`$DATASET` is the data we process, it can be "ogbl-ddi", "ogbl-collab" or "ogbl-ppa". 
+`$EDGE_DIR` is the place we store the edges.
 
-# Generate Feature
+## Step-2: Generate Feature
 
 Compile:
 
@@ -22,126 +25,67 @@ Compile:
     
 Generate Feature:
 
-    ./generate_feature $FEATURE_NAME $EDGE_DIR $INFO_DIR <$NUM_TREES> <$NUM_ANCHOR_NODES> <$MAX_DISTANCE> <$USE_MIN_ANCHOR> <$EXTRA_RANDOM_EDGES> <$BETA> <$MAX_LENGTH> <$USE_VAL>
+    ./generate_feature $Distance_NAME $EDGE_DIR $INFO_DIR <$NUM_TREES> <$NUM_ANCHOR_NODES> <$MAX_DISTANCE> <$USE_MIN_ANCHOR> <$EXTRA_RANDOM_EDGES> <$BETA> <$MAX_LENGTH> <$USE_VAL>
 
-$FEATURE_NAME is the name of feature. $EDGE_DIR is the place we store the edges. $INFO_DIR is the place we store edges' infomation. $NUM_TREES is the random tree we generated. $NUM_ANCHOR_NODES is the anchor nodes we selected. $MAX_DISTANCE is the default maximum distance. $USE_MIN_ANCHOR is whether use the minimum $EXTRA_RANDOM_EDGES$ is the number of random edges we added to the graph each time we select a anchor node. $BETA is the parameter of Katz Index. $MAX_LENGTH is the maximum number of steps. $USE_VAL is whether we use the validation data as the input of test data.
+In this work, we implement variants of distances
 
-## Random Tree
+- `$Distance_NAME` is the name of distance. 
+- `$EDGE_DIR` is the place we store the edges. 
+- `$INFO_DIR` is the place we store edges' infomation. 
+- `$NUM_ANCHOR_NODES` is the anchor nodes we selected. Used for anchor-based distance (recommended)
+- `$USE_MIN_ANCHOR` is whether use the minimum distance among anchor points.
+- `$EXTRA_RANDOM_EDGES` is the number of random edges we added to the graph each time we select a anchor node.
+- `$NUM_TREES` is the random tree we generated. Used for tree-based distance.
+- `$MAX_DISTANCE` is the default maximum distance. 
+- `$BETA` is the parameter of Katz Index. 
+- `$MAX_LENGTH` is the maximum number of steps. 
+- `$USE_VAL` is whether we use the validation data as the input of test data.
 
-    ./generate_feature random_tree $EDGE_DIR $INFO_DIR $NUM_TREES $USE_VAL
+We can generate distances using the following commands:
+- `Random Tree`: `./generate_feature random_tree $EDGE_DIR $INFO_DIR $NUM_TREES $USE_VAL`
+- `Anchor Distance`: `./generate_feature anchor_distance $EDGE_DIR $INFO_DIR $NUM_ANCHOR_NODES $MAX_DISTANCE $USE_MIN_ANCHOR $EXTRA_RANDOM_EDGES $USE_VAL`
+- `Shortest Path`: `./generate_feature shortest_path $EDGE_DIR $INFO_DIR $MAX_DISTANCE $USE_VAL`
+- `Katz Distance`: `./generate_feature katz_distance $EDGE_DIR $INFO_DIR $BETA $MAX_LENGTH`
+- `Common Neighbors & Jaccard Coefficient & Adamic Adar & Resource Allocation`: `./generate_feature common_neighbors/jaccard_coefficient/adamic_adar/resource_allocation $USE_VAL`
 
-## Anchor Distance
+## Step-3: Run Jobs
 
-    ./generate_feature anchor_distance $EDGE_DIR $INFO_DIR $NUM_ANCHOR_NODES $MAX_DISTANCE $USE_MIN_ANCHOR $EXTRA_RANDOM_EDGES $USE_VAL
+- Baseline: `python link_pred.py`
+- Using one kind of distance: `python link_pred.py --extra_data_dir $INFO_DIR --extra_data_list $FEATURE_NAME --extra_data_weight $FEATURE_WEIGHT --extra_data_layer $FEATURE_LAYER`
+- Using multiple kinds of distances: `python link_pred.py --extra_data_dir $INFO_DIR --extra_data_list $FEATURE_NAME_1 $FEATURE_NAME_2 ... $FEATURE_NAME_N --extra_data_weight $FEATURE_WEIGHT_1 $FEATURE_WEIGHT_2 ... $FEATURE_WEIGHT_N --extra_data_layer $FEATURE_LAYER_1 $FEATURE_LAYER_2 ... $FEATURE_LAYER_N`
 
-## Shortest Path
+    
+## Our Setting for DDI
 
-    ./generate_feature shortest_path $EDGE_DIR $INFO_DIR $MAX_DISTANCE $USE_VAL
+### Data processing
+```
+DATASET='ogbl-ddi'
+python process_data.py --name $DATASET --dir ./DDI_edge
 
-## Katz Distance
+EDGE_DIR=DDI_edge
+INFO_DIR=DDI_info
+NUM_ANCHOR_NODES=1000
+MAX_DISTANCE=10
+USE_MIN_ANCHOR=
+EXTRA_RANDOM_EDGES=
+USE_VAL=
 
-    ./generate_feature katz_distance $EDGE_DIR $INFO_DIR $BETA $MAX_LENGTH
+./generate_feature anchor_distance $EDGE_DIR $INFO_DIR $NUM_ANCHOR_NODES $MAX_DISTANCE $USE_MIN_ANCHOR $EXTRA_RANDOM_EDGES $USE_VAL
+```
 
-## Common Neighbors & Jaccard Coefficient & Adamic Adar & Resource Allocation
+### Running our algorithm
+```
+L=2
+hid=512
 
-    ./generate_feature common_neighbors/jaccard_coefficient/adamic_adar/resource_allocation $USE_VAL
+python link_pred.py --extra_data_dir './DDI_info'  \
+--extra_data_weight 0.1 \
+--extra_data_layer 1 \
+--dataset ogbl-ddi \
+--extra_data_list anchor_distance \
+--model GraphSAGE \
+--num_layers $L --node_emb $hid --hidden_channels $hid --dropout 0.3 --batch_size 70000 --lr 0.003 --epochs 500 --runs 100 --eval_epoch 50
+```
 
-# Run Jobs
-
-## BaseLine
-
-    python link_pred.py
-
-## One Feature
-
-    python link_pred.py --extra_data_dir $INFO_DIR --extra_data_list $FEATURE_NAME --extra_data_weight $FEATURE_WEIGHT --extra_data_layer $FEATURE_LAYER
-
-## Multiple Features
-
-    python link_pred.py --extra_data_dir $INFO_DIR --extra_data_list $FEATURE_NAME_1 $FEATURE_NAME_2 ... $FEATURE_NAME_N --extra_data_weight $FEATURE_WEIGHT_1 $FEATURE_WEIGHT_2 ... $FEATURE_WEIGHT_N --extra_data_layer $FEATURE_LAYER_1 $FEATURE_LAYER_2 ... $FEATURE_LAYER_N
-
-# Our Settings
-
-## DDI
-
-$DATASET = 'ogbl-ddi'
-
-$NUM_TREES = 10000
-
-$NUM_ANCHOR_NODES = 50000
-
-$MAX_DISTANCE = 10
-
-$BETA = 0.03
-
-$MAX_LENGTH = 10
-
-### BaseLine
-
-    python link_pred.py --dataset ogbl-ddi --model GraphSAGE --num_layers 2 --node_emb 500 --hidden_channels 500 --dropout 0.3 --batch_size 70000 --lr 0.003 --epochs 500 --runs 100 --eval_epoch 50
-
-### One Feature
-
-    python link_pred.py --extra_data_list random_tree --extra_data_weight 0.1 --extra_data_layer 1
-
-    python link_pred.py --extra_data_list anchor_distance --extra_data_weight 0.1 --extra_data_layer 1
-
-    python link_pred.py --extra_data_list shortest_path --extra_data_weight 0.1 --extra_data_layer 1
-
-    python link_pred.py --extra_data_list katz_distance --extra_data_weight 0.1 --extra_data_layer 2
-
-### Multiple Features
-
-    python link_pred.py --extra_data_list random_tree anchor_distance shortest_path katz_distance --extra_data_weight 0.05 0.1 0.03 0.03 --extra_data_layer 1 1 1 2
-
-## COLLAB
-
-$DATASET = 'ogbl-collab'
-
-$NUM_TREES = 2500
-
-$NUM_ANCHOR_NODES = 2500
-
-$EXTRA_RANDOM_EDGES = 200000
-
-$MAX_DISTANCE = 20
-
-### BaseLine
-
-    python link_pred.py --dataset ogbl-collab --model GCN --num_layers 3 --node_emb 200 --hidden_channels 500 --dropout 0.1 --batch_size 70000 --lr 0.003 --epochs 1000 --runs 10 --eval_epoch 50
-
-### One Feature
-
-    python link_pred.py --extra_data_list random_tree --extra_data_weight 1.0 --extra_data_layer 1
-
-    python link_pred.py --extra_data_list anchor_distance --extra_data_weight 1.0 --extra_data_layer 1
-
-    python link_pred.py --extra_data_list shortest_path --extra_data_weight 1.0 --extra_data_layer 1
-
-### Multiple Features
-
-    python link_pred.py --extra_data_list random_tree anchor_distance shortest_path --extra_data_weight 1.0 0.05 1.0 --extra_data_layer 1 1 1
-
-## PPA
-
-$DATASET = 'ogbl-ppa'
-
-$NUM_TREES = 500
-
-$NUM_ANCHOR_NODES = 2000
-
-$MAX_DISTANCE = 40
-
-### BaseLine
-
-    python link_pred.py --datsaet ogbl-ppa --model GCN --num_layers 3 --node_emb 200 --hidden_channels 500 --dropout 0.1 --batch_size 70000 --lr 0.001 --epochs 200 --eval_epoch 20 --use_res True
-
-### One Feature
-
-    python link_pred.py --extra_data_list random_tree --extra_data_weight 0.03 --extra_data_layer 1
-
-    python link_pred.py --extra_data_list anchor_distance --extra_data_weight 0.01 --extra_data_layer 1
-
-### Multiple Features
-
-    python link_pred.py --extra_data_list random_tree anchor_distance --extra_data_weight 0.01 0.03 --extra_data_layer 1 1
+### Results
+We repeat the experiments for 30 times. The validation Hits@20 is `82.0566 \pm 2.9849`. The test Hits@20 is `82.3877 \pm 4.3709`.
