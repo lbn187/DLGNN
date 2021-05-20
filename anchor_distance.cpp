@@ -19,11 +19,7 @@ void anchor_distance(char *in_dir, char *out_dir, int num, int maxv, bool use_mi
 	vis.resize(num_nodes);
 	d.resize(num_nodes);
 	edge.resize(num_nodes);
-<<<<<<< HEAD
 	sum_d.reszie(num_nodes);
-=======
-	sum_d.resize(num_nodes);
->>>>>>> neg
 	scanf("%d", &train_pos_m);
 	train_pos.resize(train_pos_m);
 	for(int i = 0; i < train_pos_m; i++){
